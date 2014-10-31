@@ -10,6 +10,7 @@ public class LockManager extends LockScreenManager {
 	
 	private final String TAG = this.getClass().getSimpleName();
 	
+	
 	public void showLockScreen() {
 		// only show the lockscreen if main activity is currently on top
 		// else, wait until onResume() to show the lockscreen so it doesn't 

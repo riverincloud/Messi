@@ -16,19 +16,19 @@ public class AppLinkApplication extends Application {
 	
 	private final String TAG = this.getClass().getSimpleName();
 	
-	private static AppLinkApplication application;
+	private static AppLinkApplication application = null;
 	private static Activity currentActivity;
 	private static LockManager lockManager = new LockManager();
 	
-	static {
-		application = null;
-	}
+	//static {
+		//application = null;
+	//}
 	
 	public static synchronized AppLinkApplication getApplication() {
 		return application;
 	}
 	
-	private static synchronized void setApplication(AppLinkApplication app) {
+	public static synchronized void setApplication(AppLinkApplication app) {
 		application = app;
 	}
 	
@@ -48,27 +48,15 @@ public class AppLinkApplication extends Application {
 		lockManager = lock;
 	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		AppLinkApplication.setApplication(this);
-		startSyncProxyService();
-	}
 	
-	@Override
-	public void onLowMemory() {
-		super.onLowMemory();
-	}
 	
     public void startSyncProxyService() {
         // Get the local Bluetooth adapter
         BluetoothAdapter mBtAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // If BT adapter exists, is enabled, and there are paired devices, start service/proxy
-        if (mBtAdapter != null)
-		{
-			if ((mBtAdapter.isEnabled() && mBtAdapter.getBondedDevices().isEmpty() == false)) 
-			{
+        if (mBtAdapter != null)	{
+			if ((mBtAdapter.isEnabled() && mBtAdapter.getBondedDevices().isEmpty() == false)) {
 				Intent startIntent = new Intent(this, AppLinkService.class);
 				startService(startIntent);
 			}
@@ -78,10 +66,10 @@ public class AppLinkApplication extends Application {
     // Recycle the proxy
 	public void endSyncProxyInstance() {	
 		AppLinkService serviceInstance = AppLinkService.getService();
-		if (serviceInstance != null){
+		if (serviceInstance != null) {
 			SyncProxyALM proxyInstance = serviceInstance.getProxy();
 			// if proxy exists, reset it
-			if(proxyInstance != null){			
+			if(proxyInstance != null) {			
 				serviceInstance.reset();
 			// if proxy == null create proxy
 			} else {
@@ -127,4 +115,18 @@ public class AppLinkApplication extends Application {
 									 .setMessage(appMessage + "\r\n" + proxyMessage)
 									 .setNeutralButton(android.R.string.ok, null).create().show();
 	}
+	
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		AppLinkApplication.setApplication(this);
+		startSyncProxyService();
+	}
+	
+	@Override
+	public void onLowMemory() {
+		super.onLowMemory();
+	}
+	
 }

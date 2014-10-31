@@ -10,6 +10,7 @@ public class AppLinkActivity extends Activity {
 	
 	private boolean activityOnTop;
 	
+	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +66,7 @@ public class AppLinkActivity extends Activity {
     	return true;	            
 	}
     
-	public boolean isActivityonTop(){
+	public boolean isActivityonTop() {
 		return activityOnTop;
 	}
 }

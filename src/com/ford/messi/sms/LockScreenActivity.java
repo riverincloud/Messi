@@ -6,11 +6,17 @@ import android.os.Bundle;
 
 public class LockScreenActivity extends Activity {
 	
-	private static LockScreenActivity instance;
+	private static LockScreenActivity instance = null;
 	
-	static {
-		LockScreenActivity.instance = null;
-	}
+	
+	public static LockScreenActivity getInstance() {
+    	return instance;
+    }
+	
+	public void exit() {
+    	super.finish();
+    }
+	
 		
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,11 +36,4 @@ public class LockScreenActivity extends Activity {
 		super.onDestroy();
     }
     
-    public void exit() {
-    	super.finish();
-    }
-    
-    public static LockScreenActivity getInstance() {
-    	return instance;
-    }
 }

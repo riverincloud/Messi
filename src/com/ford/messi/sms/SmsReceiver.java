@@ -15,28 +15,27 @@ public class SmsReceiver extends BroadcastReceiver {
 	
 	private final String TAG = this.getClass().getSimpleName();
 	
+	
 	@Override
-	public void onReceive(Context context, Intent intent) {
+	public void onReceive(Context context, Intent intent) {		
+		Log.d(TAG, "onReceive called; sms intent action: " + intent.getAction());
+		if (intent.getAction().compareTo(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) == 0) {
+			ArrayList<Message> messageList = MainActivity.getMain().getMessageList();
+			int startIndex = messageList.size();		
+			SmsMessage[] smsArray = Telephony.Sms.Intents.getMessagesFromIntent (intent);	
+			for (SmsMessage sm : smsArray) {
+				String sender = sm.getDisplayOriginatingAddress();
+				String body = sm.getDisplayMessageBody();
+				int currentIndex = messageList.size();
+				Message m = new Message(sender, body, currentIndex);
+				messageList.add(m);
+			}
+			Log.d(TAG, "Updated messageList size: " + messageList.size());
 		
-		Log.d(TAG,"onReceive sms intent: " + intent);
-		
-		ArrayList<Message> messageList = MainActivity.getMain().getMessageList();
-		Log.d(TAG,"Main messageList size: " + messageList.size());
-		int startIndex = messageList.size();
-		
-		SmsMessage[] smsArray = Telephony.Sms.Intents.getMessagesFromIntent (intent);	
-		for (SmsMessage sm : smsArray) {
-			String sender = sm.getDisplayOriginatingAddress();
-			String body = sm.getDisplayMessageBody();
-			int currentIndex = messageList.size();
-			Message m = new Message(sender, body, currentIndex);
-			messageList.add(m);
+			MainActivity.getMain().updateMessageList(messageList);
+			AppLinkService.getService().setMessageList(messageList);
+			AppLinkService.getService().alertMessage(startIndex);
 		}
-		Log.d(TAG,"New messageList size: " + messageList.size());
-		
-		MainActivity.getMain().updateMessageList(messageList);
-		AppLinkService.getService().setMessageList(messageList);
-		AppLinkService.getService().alertMessage(startIndex);
     }	
 
 }

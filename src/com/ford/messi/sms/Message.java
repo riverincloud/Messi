@@ -6,14 +6,16 @@ public class Message {
 	private String body;
 	private int currentIndex;
 	
+	
 	public Message() {		
 	}
 	
 	public Message(String sender, String body, int currentIndex) {
 		this.sender = sender;
-		this.setBody(body);
+		this.body = body;
 		this.currentIndex = currentIndex;
 	}
+	
 	
 	public String getSender() {
 		return sender;
@@ -39,8 +41,9 @@ public class Message {
 		this.currentIndex = currentIndex;
 	}
 	
+	
 	public String toString() {
-		return "Sender: " + sender + "; " + "Body: " + body + "; " + "Current index: " + currentIndex;
+		return "Sender: " + sender + "; Body: " + body + "; Current index: " + currentIndex;
 	}
 
 }

@@ -204,28 +204,53 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		return sb;
 	}
 	
-	private Vector<SoftButton> setUpSoftButtons(SoftButtonsGroup group) {
+	private Vector<SoftButton> setUpSoftButtons(SoftButtonsGroup group) {		
+		SoftButton sb1;
+		SoftButton sb2;
+		SoftButton sb3;
+		SoftButton sb4;
 		Vector<SoftButton> softButtons = new Vector<SoftButton>();
+		
 		switch(group) {
 			case MSG_ALERT:
 				Log.d(TAG, "setUpSoftButtons called for MSG_ALERT");
-				SoftButton sb1 = createSoftButton(1, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
-				SoftButton sb2 = createSoftButton(2, "View", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
-				SoftButton sb3 = createSoftButton(3, "Ignore", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+				sb1 = createSoftButton(1, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+				sb2 = createSoftButton(2, "View", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+				sb3 = createSoftButton(3, "Ignore", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+		        softButtons.add(sb1);
+		 		softButtons.add(sb2);
+		 		softButtons.add(sb3);
+				break;
+			case MSG_ALERT_LISTEN:
+				Log.d(TAG, "setUpSoftButtons called for MSG_ALERT_LISTEN");
+				sb1 = createSoftButton(1, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, true);
+				sb2 = createSoftButton(2, "View", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+				sb3 = createSoftButton(3, "Ignore", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
 		        softButtons.add(sb1);
 		 		softButtons.add(sb2);
 		 		softButtons.add(sb3);
 				break;
 			case MSG_DETAILS:
 				Log.d(TAG, "setUpSoftButtons called for MSG_DETAILS");
-				SoftButton sb4 = createSoftButton(4, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
-		    	SoftButton sb5 = createSoftButton(5, "Reply", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);	
-		    	SoftButton sb6 = createSoftButton(6, "Call", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
-		    	SoftButton sb7 = createSoftButton(7, "Next", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
-		        softButtons.add(sb4);
-		 		softButtons.add(sb7);
-		 		softButtons.add(sb5);
-		 		softButtons.add(sb6);
+				sb1 = createSoftButton(4, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+				sb2 = createSoftButton(7, "Next", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+		    	sb3 = createSoftButton(5, "Reply", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);	
+		    	sb4 = createSoftButton(6, "Call", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);		    	
+		        softButtons.add(sb1);
+		 		softButtons.add(sb2);
+		 		softButtons.add(sb3);
+		 		softButtons.add(sb4);
+				break;
+			case MSG_DETAILS_LISTEN:
+				Log.d(TAG, "setUpSoftButtons called for MSG_DETAILS_LISTEN");
+				sb1 = createSoftButton(4, "Listen", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, true);
+				sb2 = createSoftButton(7, "Next", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);
+		    	sb3 = createSoftButton(5, "Reply", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);	
+		    	sb4 = createSoftButton(6, "Call", SoftButtonType.SBT_TEXT, SystemAction.DEFAULT_ACTION, false);		    	
+		        softButtons.add(sb1);
+		 		softButtons.add(sb2);
+		 		softButtons.add(sb3);
+		 		softButtons.add(sb4);
 				break;
 			default:
 				return softButtons;
@@ -259,6 +284,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				chunks.add(chunk);
 			}
 		}
+		Log.d(TAG, "Phone number TTSChunk: " + chunks.toString());
 		return chunks;
 	}
 	
@@ -269,6 +295,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				proxy.alert(convertPhoneNumber(currentMessage.getSender()), 
 						"Incoming msg from ", currentMessage.getSender(), null, 
 						true, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT), autoIncCorrId++);
+				Log.d(TAG, "alertMessage - Phone number chunk" + convertPhoneNumber(currentMessage.getSender()));
 				alerting = true;
 			} catch (SyncException e) {
 				DebugTool.logError("Failed to send Alert", e);
@@ -276,13 +303,13 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		}
 	}
 	
-	private void viewMessage(int index) {
+	private void viewMessage(int index, SoftButtonsGroup group) {
 		currentMessage = messageList.get(index);
 		Log.d(TAG, "Selected message: " + currentMessage.toString());
 		try {
 			proxy.scrollablemessage(index+1 + "/" + messageList.size() + " " + 
 					currentMessage.getSender() + ": " + '\n' +	currentMessage.getBody(), 10000, 
-					setUpSoftButtons(SoftButtonsGroup.MSG_DETAILS), autoIncCorrId++);	
+					setUpSoftButtons(group), autoIncCorrId++);	
 		} catch (SyncException e) {
 			DebugTool.logError("Failed to send ScrollableMessage", e);
 		}		
@@ -388,8 +415,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				
 					// send welcome message if applicable
 					try {
-						proxy.show("Welcome!", "Ready to receive SMS", TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
-						//quickReply("+61434581450", PresetReply.DRIVING);
+						proxy.show("Welcome!", "Ready to receive", "SMS message", null, null, null, null, TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
 					} catch (SyncException e) {
 						DebugTool.logError("Failed to send show Welcome", e);
 					}
@@ -447,7 +473,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	@Override
 	public void onOnCommand(OnCommand notification) {
 		Log.d(TAG, "OnCommand notification - cmdID: " + notification.getCmdID());
-		viewMessage(notification.getCmdID());
+		viewMessage(notification.getCmdID(), SoftButtonsGroup.MSG_DETAILS);
 	}
 	
 	@Override
@@ -551,14 +577,14 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				try {
 					proxy.alert(currentMessage.getBody(), 
 							"Incoming msg from ", currentMessage.getSender(), null, 
-							false, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT), autoIncCorrId++);
+							false, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT_LISTEN), autoIncCorrId++);
 					alerting = true;
 				} catch (SyncException e) {
 					DebugTool.logError("Failed to send Alert", e);
 				}
 			} else if (notification.getCustomButtonName() == 2) {
 				Log.d(TAG, "Soft button 2-View down");
-				viewMessage(currentMessage.getCurrentIndex());	
+				viewMessage(currentMessage.getCurrentIndex(), SoftButtonsGroup.MSG_DETAILS);	
 			} else if (notification.getCustomButtonName() == 3) {
 				Log.d(TAG, "Soft button 3-Ignore down");
 				alerting = false;
@@ -570,7 +596,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				} catch (SyncException e) {
 					DebugTool.logError("Failed to send Speak", e);
 				}
-				viewMessage(currentMessage.getCurrentIndex());
+				viewMessage(currentMessage.getCurrentIndex(), SoftButtonsGroup.MSG_DETAILS_LISTEN);
 			} else if (notification.getCustomButtonName() == 5) {
 				Log.d(TAG, "Soft button 5-Reply down");
 				Choice c1 = createChoice(1, "Driving");
@@ -596,9 +622,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				Log.d(TAG, "Soft button 7-Next down");
 				Log.d(TAG, "currentIndex: " + currentMessage.getCurrentIndex() + "; messageList size: " + messageList.size());
 				if (currentMessage.getCurrentIndex()+1 == messageList.size()) {
-					viewMessage(0);
+					viewMessage(0, SoftButtonsGroup.MSG_DETAILS);
 				} else {
-					viewMessage(currentMessage.getCurrentIndex()+1);
+					viewMessage(currentMessage.getCurrentIndex()+1, SoftButtonsGroup.MSG_DETAILS);
 				}
 			}
 		} 

@@ -27,6 +27,13 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         
+        
+        <activity
+            android:name="com.ford.messi.applink.AppLinkActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        
         <activity
             android:name="com.ford.messi.sms.MainActivity"
             android:label="@string/app_name"
@@ -41,9 +48,9 @@
             android:name="com.ford.messi.sms.LockScreenActivity"
             android:label="@string/title_activity_lock"
             android:screenOrientation="portrait" >
-        </activity>
-        
+        </activity>      
 
+        
         <service 
             android:name="com.ford.messi.applink.AppLinkService" >
         </service>

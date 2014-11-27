@@ -2,9 +2,7 @@
 <resources>
 
     <string name="app_name">Messi</string>
-    <string name="exit">Exit</string>
     <string name="about">About</string>
-    <string name="title_activity_main">Forwarded Messages</string>
     <string name="reset">Reset SYNC</string>
     <string name="logo">SYNC Logo</string>
     <string name="title_activity_lock">Locked</string>

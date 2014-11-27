@@ -62,6 +62,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	
 	public void setMessageList(ArrayList<Message> messageList) {
 		this.messageList = messageList;
+		addCommands();
 	}
 	
 	/**
@@ -173,6 +174,64 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		}
 	}
 	
+	private void addCommands() {
+		for (Message m : this.messageList) {
+			try {
+				proxy.addCommand(m.getCurrentIndex(), m.getCurrentIndex()+1 + " " + m.getSender(), 
+						1, m.getCurrentIndex()+1, null, autoIncCorrId++);
+			} catch(SyncException e) {
+				DebugTool.logError("Failed to send addCommand", e);
+			}
+		}
+	}
+	
+	private void addInboxEmptySign() {
+		try {
+			proxy.addCommand(1000, "Empty", 1, 1, null, autoIncCorrId++);
+			Log.d(TAG, "'Inbox empty' shown");
+		} catch (SyncException e) {
+			DebugTool.logError("Failed to send show Inbox empty", e);
+		}
+	}
+	
+	private void removeInboxEmptySign() {
+		try {
+			proxy.deleteCommand(1000, autoIncCorrId++);
+			Log.d(TAG, "'Inbox empty' removed");
+		} catch (SyncException e) {
+			DebugTool.logError("Failed to remove Inbox empty", e);
+		}
+	}
+	
+	private void displayHomeMessage(int msgID) {
+		switch(msgID) {
+		case 1:
+			Log.d(TAG, "Show welcome");
+			try {
+				proxy.show("Welcome!", "Ready to receive", "SMS message", null, null, null, null, TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
+			} catch (SyncException e) {
+				DebugTool.logError("Failed to send show Welcome", e);
+			}
+			break;
+		case 2:
+			Log.d(TAG, "Show inbox empty");
+			try {
+				proxy.show("SMS inbox empty.", "", TextAlignment.LEFT_ALIGNED, autoIncCorrId++);						
+			} catch (SyncException e) {
+				DebugTool.logError("Failed to send show Inbox empty", e);
+			}
+			break;
+		case 3:
+			Log.d(TAG, "Show More > Inbox");
+			try {
+				proxy.show("More > Inbox", "", TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
+			} catch (SyncException e) {
+				DebugTool.logError("Failed to send show More > Inbox", e);
+			}
+			break;
+		default:
+		}
+	}
 	private void subcribeButtons() {
 		try {
 	        proxy.subscribeButton(ButtonName.OK, autoIncCorrId++);
@@ -401,44 +460,23 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		  
 		switch(onHMIStatus.getHmiLevel()) {
 			case HMI_FULL:
-				Log.i(TAG, "HMI_FULL");				
-						
-				// subscribe to buttons
-				subcribeButtons();
+				Log.i(TAG, "HMI_FULL");
 				
 				if (onHMIStatus.getFirstRun()) {
-					Log.i(TAG, "HMI FirstRun");
-					// Set HelpPrompt
-					// Set TimeoutPrompt					
-					// add sub menus
+					Log.i(TAG, "HMI FirstRun");			
+					// add sub menu
 					addSubMenus();	
-				
+					// add "Empty" to submenu Inbox 
+					addInboxEmptySign();
+					// subscribe to buttons
+					subcribeButtons();
 					// send welcome message if applicable
-					try {
-						proxy.show("Welcome!", "Ready to receive", "SMS message", null, null, null, null, TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
-					} catch (SyncException e) {
-						DebugTool.logError("Failed to send show Welcome", e);
-					}
+					displayHomeMessage(1);					
 				} else if (messageList.size() == 0) {
-					try {
-						proxy.show("SMS inbox empty.", "", TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
-					} catch (SyncException e) {
-						DebugTool.logError("Failed to send show Inbox empty", e);
-					}
-				} else {				
-					for (Message m : messageList) {
-						try {
-							proxy.addCommand(m.getCurrentIndex(), m.getCurrentIndex()+1 + " " + m.getSender(), 
-									1, m.getCurrentIndex()+1, null, autoIncCorrId++);
-						} catch(SyncException e) {
-							DebugTool.logError("Failed to send addCommand", e);
-						}
-					}
-					try {
-						proxy.show("More > Inbox", "", TextAlignment.LEFT_ALIGNED, autoIncCorrId++);
-					} catch (SyncException e) {
-						DebugTool.logError("Failed to send show More > Inbox", e);
-					}
+					displayHomeMessage(2);
+				} else {	
+					removeInboxEmptySign();
+					displayHomeMessage(3);
 				}
 				break;
 			case HMI_LIMITED:

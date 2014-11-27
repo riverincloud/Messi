@@ -22,7 +22,7 @@ public class LockScreenActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.lockscreen);
-		LockScreenActivity.instance = this;
+		instance = this;
     }
     
     // Disable back button on lockscreen
@@ -32,7 +32,6 @@ public class LockScreenActivity extends Activity {
     
     @Override
     public void onDestroy() {
-		LockScreenActivity.instance = null;
 		super.onDestroy();
     }
     

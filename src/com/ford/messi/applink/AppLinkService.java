@@ -62,6 +62,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	
 	public void setMessageList(ArrayList<Message> messageList) {
 		this.messageList = messageList;
+		removeInboxEmptySign();
 		addCommands();
 	}
 	
@@ -177,7 +178,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private void addCommands() {
 		for (Message m : this.messageList) {
 			try {
-				proxy.addCommand(m.getCurrentIndex(), m.getCurrentIndex()+1 + " " + m.getSender(), 
+				proxy.addCommand(m.getCurrentIndex(), m.getCurrentIndex()+1 + " " + m.getTitle(), 
 						1, m.getCurrentIndex()+1, null, autoIncCorrId++);
 			} catch(SyncException e) {
 				DebugTool.logError("Failed to send addCommand", e);
@@ -188,7 +189,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private void addInboxEmptySign() {
 		try {
 			proxy.addCommand(1000, "Empty", 1, 1, null, autoIncCorrId++);
-			Log.d(TAG, "'Inbox empty' shown");
+			Log.d(TAG, "'Empty' command added");
 		} catch (SyncException e) {
 			DebugTool.logError("Failed to send show Inbox empty", e);
 		}
@@ -197,7 +198,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 	private void removeInboxEmptySign() {
 		try {
 			proxy.deleteCommand(1000, autoIncCorrId++);
-			Log.d(TAG, "'Inbox empty' removed");
+			Log.d(TAG, "'Empty' command deleted");
 		} catch (SyncException e) {
 			DebugTool.logError("Failed to remove Inbox empty", e);
 		}
@@ -351,10 +352,16 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		if (alerting == false) {
 			currentMessage = messageList.get(startIndex);
 			try {
-				proxy.alert(convertPhoneNumber(currentMessage.getSender()), 
-						"Incoming msg from ", currentMessage.getSender(), null, 
-						true, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT), autoIncCorrId++);
-				Log.d(TAG, "alertMessage - Phone number chunk" + convertPhoneNumber(currentMessage.getSender()));
+				if (currentMessage.getTitle() == currentMessage.getSender()) {
+					proxy.alert(convertPhoneNumber(currentMessage.getSender()), 
+							"Incoming msg from ", currentMessage.getTitle(), null, 
+							true, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT), autoIncCorrId++);
+				} else {
+					proxy.alert("Incoming message from " + currentMessage.getTitle(), 
+							"Incoming msg from ", currentMessage.getTitle(), null, 
+							true, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT), autoIncCorrId++);
+				}
+				Log.d(TAG, "alertMessage called - Title: " + currentMessage.getTitle());
 				alerting = true;
 			} catch (SyncException e) {
 				DebugTool.logError("Failed to send Alert", e);
@@ -367,8 +374,9 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 		Log.d(TAG, "Selected message: " + currentMessage.toString());
 		try {
 			proxy.scrollablemessage(index+1 + "/" + messageList.size() + " " + 
-					currentMessage.getSender() + ": " + '\n' +	currentMessage.getBody(), 10000, 
+					currentMessage.getTitle() + ": " + '\n' +	currentMessage.getBody(), 10000, 
 					setUpSoftButtons(group), autoIncCorrId++);	
+			Log.d(TAG, "Body: " + currentMessage.getBody());
 		} catch (SyncException e) {
 			DebugTool.logError("Failed to send ScrollableMessage", e);
 		}		
@@ -474,8 +482,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 					displayHomeMessage(1);					
 				} else if (messageList.size() == 0) {
 					displayHomeMessage(2);
-				} else {	
-					removeInboxEmptySign();
+				} else {
 					displayHomeMessage(3);
 				}
 				break;
@@ -614,7 +621,7 @@ public class AppLinkService extends Service implements IProxyListenerALM {
 				Log.d(TAG, "Soft button 1-Listen down");
 				try {
 					proxy.alert(currentMessage.getBody(), 
-							"Incoming msg from ", currentMessage.getSender(), null, 
+							"Incoming msg from ", currentMessage.getTitle(), null, 
 							false, 10000, setUpSoftButtons(SoftButtonsGroup.MSG_ALERT_LISTEN), autoIncCorrId++);
 					alerting = true;
 				} catch (SyncException e) {

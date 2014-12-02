@@ -50,6 +50,9 @@ public class Message {
 		} else {
 			title = sender;
 		}
+		if (title == null) {
+			title = sender;
+		}
 		Log.d(TAG, "Msg title: " + getTitle());
 	}
 	
